@@ -179,8 +179,6 @@ def create_max_category_feature(df, cols, new_col, remove_text=""):
     df[new_col] = df[cols].idxmax(axis=1).str.replace(remove_text, '', regex=False)
     return df
 
-import pandas as pd
-
 def convert_type(df, columns,type):
     """
     특정 열을 수치형으로 변환하려고 시도하는데 에러가 나는 행은 삭제하는 함수.
