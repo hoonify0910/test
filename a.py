@@ -21,8 +21,8 @@ def first_step(df):
     4. 남아 있는 결측치는:
     - 범주형(object) → 'unknown'으로 채움
     - 숫자형(float, int) → 평균값으로 채움
-    5. 마지막으로 중복된 행 제거
-    Parameters: df (pd.DataFrame): 원본 데이터프레임
+    # 5. 마지막으로 중복된 행 제거
+    # Parameters: df (pd.DataFrame): 원본 데이터프레임
     """
     # 1. 공백 문자열("")도 결측치로 간주
     df = df.replace(r'^\s*$', np.nan, regex=True)
@@ -177,4 +177,35 @@ def create_max_category_feature(df, cols, new_col, remove_text=""):
         remove_text (str): 열 이름에서 제거할 문자열 (선택)
     """
     df[new_col] = df[cols].idxmax(axis=1).str.replace(remove_text, '', regex=False)
+    return df
+
+import pandas as pd
+
+def convert_type(df, columns,type):
+    """
+    특정 열을 수치형으로 변환하려고 시도하는데 에러가 나는 행은 삭제하는 함수.
+    Parameters:
+    - df: 처리할 데이터프레임
+    - columns: 수치형으로 변환하려는 열 이름 (리스트)
+    """
+    if type== 'numeric':
+        for col in columns:
+            # 수치형으로 변환 시도, 실패한 값은 NaN 처리
+            df[col] = pd.to_numeric(df[col], errors='coerce')
+    elif type== 'datetime':
+        for col in columns:
+            # datetime으로 변환 시도, 실패한 값은 NaT 처리
+            df[col] = pd.to_datetime(df[col], errors='coerce')
+    elif type== 'string':
+        for col in columns:
+            # string으로 변환 시도, 실패한 값은 NaN 처리
+            df[col] = df[col].astype(str, errors='ignore')
+    elif type== 'category':
+        for col in columns:
+            # category로 변환 시도, 실패한 값은 NaN 처리
+            df[col] = df[col].astype('category', errors='ignore')
+    
+    # 변환 실패해서 NaN이 된 행 전체 삭제
+    df = df.dropna(subset=columns)
+    
     return df
