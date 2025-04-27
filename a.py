@@ -2,6 +2,15 @@ import pandas as pd               # 데이터프레임 조작
 import numpy as np                # 결측치 처리 및 수치 계산
 from sklearn.preprocessing import StandardScaler  # Z-score 정규화
 
+""" 	
+    info(), head() 출력
+	info에서 확인한 타입과 표현된 값이 가져야 할 타입 확인
+    컬럼의 타입변경
+	타입별 컬럼이름 리스트로 분류
+	범주형 유니크값 확인 후 결측치 표현 통일
+	최종 데이터프레임 반환 + 컬럼 타입 리스트 반환 
+"""
+
 def remove_col(df, cols):
     """
     지정한 열들을 데이터프레임에서 삭제하는 함수
@@ -206,4 +215,16 @@ def convert_type(df, columns,type):
     # 변환 실패해서 NaN이 된 행 전체 삭제
     df = df.dropna(subset=columns)
     
+    return df
+
+def add_column(df, column_name, multiplier, new_column_name):
+    """
+    특정 컬럼에 상수를 곱해 새로운 파생 컬럼을 생성하는 함수.
+    Parameters:
+    - df (pd.DataFrame): 원본 데이터프레임
+    - column_name (str): 기준 컬럼명
+    - multiplier (float or int): 곱할 상수
+    - new_column_name (str): 새로 생성할 컬럼명
+    """
+    df[new_column_name] = df[column_name] * multiplier
     return df
