@@ -9,7 +9,7 @@ input_file = "2_Card.csv"
 def preprocess_credit_data(input_file):
   
     df = pd.read_csv(input_file)
-    df = df.drop(columns=['ID'], errors='ignore')
+    df = df.drop(columns=['ID'])
 
     y = df['default.payment.next.month']
     X = df.drop(columns=['default.payment.next.month'])
@@ -22,7 +22,7 @@ def preprocess_credit_data(input_file):
 
     categorical_cols = ['SEX', 'EDUCATION', 'MARRIAGE',
                         'PAY_0', 'PAY_2', 'PAY_3', 'PAY_4', 'PAY_5', 'PAY_6']
-    #KNNImputer로 결측치 보간간
+    #KNNImputer로 결측치 보간
     imputer = KNNImputer(n_neighbors=2)
     X[numeric_cols] = imputer.fit_transform(X[numeric_cols])
 
@@ -36,7 +36,7 @@ def preprocess_credit_data(input_file):
     encoded = encoder.fit_transform(X[categorical_cols])
     encoded_df = pd.DataFrame(encoded, columns=encoder.get_feature_names_out(categorical_cols))
 
-    #Standard Scaler를 사용하여 수치 정규화화
+    #Standard Scaler를 사용하여 수치 정규화
     scaler = StandardScaler()
     scaled = scaler.fit_transform(X[numeric_cols])
     scaled_df = pd.DataFrame(scaled, columns=numeric_cols)
@@ -46,7 +46,7 @@ def preprocess_credit_data(input_file):
 
     return X_processed, y.reset_index(drop=True), X.reset_index(drop=True)  # X(원본 컬럼 유지)도 같이 리턴
 
-# 연체 예측 함수수
+# 연체 예측 함수    
 def predict(X_raw):
     #연체 판단 점수를 risk score로 limit score는 기존 연체로 판단한 점수 education score는 학업 수준에 따른 점수수
     limit_score = (X_raw['LIMIT_BAL'].max() - X_raw['LIMIT_BAL']) / X_raw['LIMIT_BAL'].max()
@@ -60,7 +60,7 @@ def predict(X_raw):
 
    
 
-# 전처리 함수 수행행
+# 전처리 함수 수행
 X_processed, y, X_raw = preprocess_credit_data(input_file)
 
 predict(X_raw)
