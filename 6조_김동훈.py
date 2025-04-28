@@ -2,6 +2,10 @@ import a
 import pandas as pd # 데이터프레임 조작
 import numpy as np # 결측치 처리 및 수치 계산
 from sklearn.preprocessing import StandardScaler # Z-score 정규화
+# 1번데이터에 대해 진행
+
+# 진행과정은 주피터 노트북으로 각 결과값들을 확인해가며 진행했습니다.
+# a.py는 각 함수들을 직관적으로 네이밍 해서 시험전에 만든 모듈 파일입니다. 
 
 input_file = pd.read_csv('1_adults.csv')
 def some_function(input_file):
@@ -18,18 +22,19 @@ def some_function(input_file):
     df=a.bins2(df,'education.num',[0,0.25,0.5,0.75,1],['low','mid','high','very high'],'edu_level') 
     # education.num을 사분위수로 나누어로 나누기-> 파생변수 생성
 
-    remove_target = ['education.num', 'capital.gain'] # 제거할 컬럼 
-    # education.num은 사분위수로 나누어져서 필요없고, capital.gain은 모든 엘리먼트가 0이라 제거
+    remove_target = ['education.num', 'capital.gain','capital.loss'] # 제거할 컬럼 
+    # education.num은 사분위수로 나누어져서 필요없고, capital.gain은 모든 엘리먼트가 0이라 제거, capital.loss는 대부분 값이 0
     df=a.remove_col(df, remove_target) 
 
-    num_cols = ['age', 'fnlwgt', 'hours.per.week','capital.loss'] # 수치형 데이터
+    num_cols = ['age', 'fnlwgt', 'hours.per.week'] # 수치형 데이터
     df=a.remove_out(df,num_cols) # 4분위수 근거한 이상치 제거
 
     obj_cols=obj_cols + ['edu_level'] # 범주형 데이터에 파생변수 추가
+    obj_cols.remove('income') # income은 타겟변수로 제거
     df=a.cat_encode(df,obj_cols) # income를 One-hot Encoding
 
     df=a.num_encode(df,num_cols) # 수치형 데이터 z-score 정규화
     return df
 
 output_file = some_function(input_file)
-output_file.to_csv('output.csv', index=False) # 결과를 CSV 파일로 저장
+#output_file.to_csv('output.csv', index=False) # 결과를 CSV 파일로 저장
