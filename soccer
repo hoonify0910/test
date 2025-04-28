@@ -1,0 +1,101 @@
+import pandas as pd
+import numpy as np
+import os
+from sklearn.preprocessing import LabelEncoder, MinMaxScaler
+
+class AutoPreprocessor:
+    def __init__(self, file_path, target_col):
+        self.file_path = file_path
+        self.target_col = target_col
+        self.df = pd.read_csv(file_path)
+        self.output_dir = '/content/output'
+        os.makedirs(self.output_dir, exist_ok=True)
+
+    def handle_missing(self):
+        for col in self.df.columns:
+            if self.df[col].isnull().sum() > 0:
+                if self.df[col].dtype == 'object':
+                    self.df[col].fillna(self.df[col].mode()[0], inplace=True)
+                else:
+                    self.df[col].fillna(self.df[col].median(), inplace=True)
+
+    def detect_outliers(self):
+        numeric_cols = self.df.select_dtypes(include=[np.number]).columns
+        initial_rows = self.df.shape[0]
+    
+        for col in numeric_cols:
+            Q1 = self.df[col].quantile(0.25)
+            Q3 = self.df[col].quantile(0.75)
+            IQR = Q3 - Q1
+            lower_bound = Q1 - 1.5 * IQR
+            upper_bound = Q3 + 1.5 * IQR
+            self.df = self.df[(self.df[col] >= lower_bound) & (self.df[col] <= upper_bound)]
+
+    # 만약 제거 후 데이터가 50% 이상 줄었거나, 데이터가 0개가 되면 → 이상치 제거 취소
+        if self.df.shape[0] < initial_rows * 0.5 or self.df.shape[0] == 0:
+            print("이상치 제거로 데이터가 너무 줄어들어 원래 데이터로 복구합니다.")
+            self.df = pd.read_csv(self.file_path)
+
+    def encode_features(self):
+        for col in self.df.columns:
+            if self.df[col].dtype == 'object' and col != self.target_col:
+                le = LabelEncoder()
+                self.df[col] = le.fit_transform(self.df[col])
+
+    def normalize_data(self):
+        numeric_cols = self.df.select_dtypes(include=[np.number]).columns
+        numeric_cols = [col for col in numeric_cols if col != self.target_col]
+        scaler = MinMaxScaler()
+        self.df[numeric_cols] = scaler.fit_transform(self.df[numeric_cols])
+
+    def create_features(self):
+        if 'Age' in self.df.columns:
+            self.df['Age_category'] = pd.cut(self.df['Age'], bins=[0, 20, 40, 60, 80, 100], labels=False)
+
+    def remove_duplicates(self):
+        self.df.drop_duplicates(inplace=True)
+
+    def save_outputs(self):
+        base_filename = os.path.basename(self.file_path).replace('.csv', '')
+        output_path = f"{self.output_dir}/{base_filename}_cleaned.csv"
+        self.df.to_csv(output_path, index=False)
+        
+        readme_content = f"전처리 완료: 결측치 처리, 이상치 제거, 범주형 인코딩, 정규화 수행. 파일명: {base_filename}_cleaned.csv"
+        with open(f"{self.output_dir}/README.txt", 'w') as f:
+            f.write(readme_content)
+        
+        print(f"파일 저장 완료: {output_path} 및 README.txt")
+
+    def run_all(self):
+        print("1. 결측치 처리 중...")
+        self.handle_missing()
+        print("2. 이상치 제거 중...")
+        self.detect_outliers()
+        print("3. 범주형 변수 인코딩 중...")
+        self.encode_features()
+        print("4. 정규화 중...")
+        self.normalize_data()
+        print("5. 파생 변수 생성 중...")
+        self.create_features()
+        print("6. 중복 제거 중...")
+        self.remove_duplicates()
+        print("7. 파일 저장 중...")
+        self.save_outputs()
+
+---
+
+processor = AutoPreprocessor(file_path='5_SOCCER.csv', target_col='Value')
+processor.run_all()
+
+---
+
+import os
+print(os.listdir('/content/output'))  # output 폴더 안 파일 목록 확인!
+
+# 파일 다운로드
+from google.colab import files
+files.download('/content/output/5_SOCCER_cleaned.csv')  # 전처리된 CSV
+files.download('/content/output/README.txt')            # 전처리 요약 파일
+
+
+# 실수로 제 개인 repo를 만들어 commit하고 있었습니다...
