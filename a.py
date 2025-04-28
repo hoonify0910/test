@@ -7,7 +7,7 @@ from sklearn.preprocessing import StandardScaler  # Z-score 정규화
 	info에서 확인한 타입과 표현된 값이 가져야 할 타입 확인
     컬럼의 타입변경
 	타입별 컬럼이름 리스트로 분류
-	범주형 유니크값 확인 후 결측치 표현 통일
+	범주형 유니크값 확인 후 결측치 표현 통일->descibe(include='all') 사용
 	최종 데이터프레임 반환 + 컬럼 타입 리스트 반환 
 """
 
